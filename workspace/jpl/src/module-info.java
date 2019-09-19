@@ -1,0 +1,3 @@
+module jpl {
+	requires junit;
+}
