@@ -1,6 +1,16 @@
 package ch02.ex17;
 
 /**
+ * 練習問題6.2 
+ * TURN_LEFT,TURNとTURN_RIGHTを表すenumを使用して
+ * 練習問題2.17をやり直す
+ * enumを利用するとどのような利点があるか
+ * 
+ * Answer of 6.2
+ * コード参照
+ * 利点は、メソッドパラメータで型をenumの取りうる値に制限できる
+ * 
+ * --------------------------------------
  * 練習問題2.17
  * ２つのturnメソッドを追加する
  * １つは引数として回転する角度を受け取り、
@@ -14,13 +24,6 @@ public class Vehicle {
 
 		private static long nextID_;		//次の乗り物の識別番号を保持するstaticフィールド
 		private long myID_;				//車単位で持つID
-
-
-//TODO メモ：定数をメソッドパラメータの型にできないと判断し、enumで実現する
-//		/** 左90度回転(-90度) */
-//		public static int TURN_LEFT = -90;
-//		/** 右90度回転(+90度)) */
-//		public static int TURN_RIGHT = 90;
 
 		public static enum Turn {
 			TURN_LEFT(-90),
