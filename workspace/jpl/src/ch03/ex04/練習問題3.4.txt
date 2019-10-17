@@ -1,0 +1,16 @@
+練習問題3.4
+
+Q.もしあるとしたら、VehicleとPassengerVechicleのどのメソッドを
+  finalにするのが適切ですか
+
+
+A.以下をfinalとすべき
+  理由は振る舞いが完全に決定しており、オーバーライドさせる必要がない完成形だから.
+
+  PassengerVehicle,classの以下
+  ・public int getSeatNum_()
+  ・public int getRidePerson()
+  ・public void addRidePerson(final int rideNum)
+  ・public void removeRidePerson(final int rideNum) {
+
+
