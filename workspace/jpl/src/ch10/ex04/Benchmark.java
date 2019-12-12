@@ -1,4 +1,4 @@
-package ch03.ex05;
+package ch10.ex04;
 
 public abstract class Benchmark {
 
@@ -19,17 +19,4 @@ public abstract class Benchmark {
 			benchmark();
 		return ( System.nanoTime() - start);
 	}
-
-	//練習問題10.4
-	public final long repeatByWhille( int count ) {
-		long start = System.nanoTime();
-		int i = 0;
-		while( i < count ) {
-			benchmark();
-			i++;
-		}
-		return ( System.nanoTime() - start);
-	}
-
-
 }

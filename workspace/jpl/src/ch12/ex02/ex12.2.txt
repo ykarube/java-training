@@ -1,0 +1,27 @@
+
+練習問題12.2
+
+
+Q1:PassengerVehicleオブジェクトの定員を負の数に設定しようとした
+A1:IllegalArgumentExceptionをthrowする
+
+
+Q2:オブジェクトがその初期値を設定するのに使用する設定ファイルに、文法エラーが見つかった
+A2:Exceptionをthrowする or コンストラクタで例外をスローする
+
+
+Q3:プログラマが指定した単語を文字列の配列から検索するメソッドが発見できない
+Q3:Exeptionをthrowするか,nullを返す,-1を返すなど
+
+Q4:openメソッドへ指定されたファイルが存在しない
+Q4:FileNotFoundExceptionをthrowする
+
+Q5:openメソッドへファ指定されたファイルは存在するが、セキュリティにより使用できない
+Q5:Exceptionを作成し、throwする
+
+
+Q6:リモートのサーバプロセスにネットワークコネクションを確立しようとするが接続できない
+Q6:IOExceptionまたはExceptionを作成し、throwする
+
+Q7:リモートのサーバプロセスとのやり取りの最中にネットワークコネクションが切れる
+Q6:IOExceptionまたはExceptionを作成し、throwする
