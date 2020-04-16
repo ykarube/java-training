@@ -10,12 +10,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.swing.JFrame;
 
-import exhoge.StringCounter;
-
+import test.StringCounter;
+//TODO パラメータが排列のインスタンス生成
 /*
 2.4 『プログラミング言語Java 第4 版』| Interpret 課題
 練習問題16.6、16.7、16.8、16.10 をそれぞれ作成する代わりに、Interpret プログラムを１つ作成してもらいます。
@@ -46,12 +48,15 @@ ex16.10 Interpretプログラムをさらに修正して、ユーザが生成す
 public class InterpretFrame extends JFrame {
 
 	private int defaultXPoint = 10;
-	private int windowWidth = 1000;
-	private int windowHeight = 1000;
+	private int windowWidth = 800;
+	private int windowHeight = 800;
 	private Class<?> type_ ;					//ユーザが入力したクラス名
 	private Constructor<?>[] contructorList_;	//ユーザが入力したクラス名から取得したコンストラクタ
 	private Object object_;					//ユーザーが選択したコンストラクタから生成したインスタンスオブジェクト
-	private String[] methodList_;
+	private String[] methodStringList_;		//ユーザーが選択したクラスのメソッド一覧（文字列）
+	private Method[] methodList_;				//ユーザーが選択したクラスのメソッド一覧
+	private String[] fieldStringList_;			//ユーザーが選択したクラスのフィールド一覧（文字列）
+	private Field[]  fieldList_;				//ユーザーが選択したクラスのフィールド一覧
 
 	private TextArea textOutput_;				//結果出力 ※showMessage(String)を利用すること
 
@@ -71,7 +76,7 @@ public class InterpretFrame extends JFrame {
 
 		//-------- 結果出力( label + testFiled ) ----------------------------------------------
 		Label labelOutput = new Label("■結果出力");
-		labelOutput.setBounds(defaultXPoint, windowHeight-200, 300, 20);
+		labelOutput.setBounds(defaultXPoint, windowHeight-180, 200, 20);
 		add(labelOutput);
 		this.textOutput_ = new TextArea("", 50, 50, TextArea.SCROLLBARS_BOTH);
 		this.textOutput_.setBounds(defaultXPoint, labelOutput.getY()+20, 800, 100);
@@ -79,32 +84,40 @@ public class InterpretFrame extends JFrame {
 
 		//-------- クラス名の入力( label +  textFiled ) ---------------------------------------
 		Label labelClassName = new Label("■取得対象クラス");
-		labelClassName.setBounds(defaultXPoint, 40, 300, 20);
+		labelClassName.setBounds(defaultXPoint, 20, 300, 20);
 		add(labelClassName);
-		TextField classNameField = new TextField("(input class name. ex:java.lang.String)");
-		classNameField.setBounds(defaultXPoint, labelClassName.getY()+20, 300, 30);
-		add(classNameField);
+		TextField textClassName = new TextField("(input class name. ex:java.lang.String)");
+		textClassName.setBounds(defaultXPoint, labelClassName.getY()+20, 300, 20);
+		add(textClassName);
 
 		//-------- コンストラクタのリスト表示 ( label +  List ) --------------------------------
 		Label labelConstruct = new Label("■コンストラクタ一覧");
-		labelConstruct.setBounds(defaultXPoint, 120, 150, 20);
+		labelConstruct.setBounds(defaultXPoint, textClassName.getY()+40, 150, 20);
 		add(labelConstruct);
 		List ListConstructor = new List();
-		ListConstructor.setBounds(defaultXPoint, labelConstruct.getY()+20, 300, 200);
+		ListConstructor.setBounds(defaultXPoint, labelConstruct.getY()+20, 300, 80);
 		add(ListConstructor);
 
+
+		/*
+		 * ex16.8
+		 * Interpretプログラムをさらに修正して、任意のクラスのコンストラクタをユーザが呼び出せるようにする。その際にどんな例外も表示すること。
+		 * またオブジェクトの生成が成功したら、そのオブジェクトのメソッドをユーザーが呼び出せるようにしなさい。
+		 */
+		/** 入力されたtextClassNameからClassオブジェクトを取得
+		 *  Classオブジェクトから全てのConstructorを取得し、contructorList_へセットする*/
 		//-------- 型からコンストラクタ一覧を取得 (botton) ----------------------------------------
 		Button buttonGetConstructor = new Button("取得");
-		buttonGetConstructor.setBounds(300+10, 60, 80,30 );
+		buttonGetConstructor.setBounds(300+10, 40, 80, 20 );
 		add(buttonGetConstructor);
 		buttonGetConstructor.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ListConstructor.removeAll();
 				type_ = null;
-				String name = classNameField.getText();
+				String name = textClassName.getText();
 				try {
-					type_ = Class.forName(name);
+					type_ = Class.forName(name);						//指定された文字列名を持つクラスまたはインタフェースに関連付けられたClassオブジェクトを返します
 					if ( type_ == null ) {
 						showErrorMessage("class not found.");
 						return;
@@ -117,6 +130,9 @@ public class InterpretFrame extends JFrame {
 				} catch (ClassNotFoundException exception) {
 					exception.printStackTrace();
 					showErrorMessage("class not found.");
+				} catch (Exception exception) {
+					exception.printStackTrace();
+					showErrorMessage(e.toString());
 				}
 			}
 		});
@@ -127,12 +143,17 @@ public class InterpretFrame extends JFrame {
 		add(labelConstructParam);
 
 		TextField textParameterFiled = new TextField("(input parameter)");
-		textParameterFiled.setBounds(defaultXPoint, labelConstructParam.getY()+20, 500, 30);
+		textParameterFiled.setBounds(defaultXPoint, labelConstructParam.getY()+20, 500, 20);
 		add(textParameterFiled);
 
+		/*
+		 * ex16.8
+		 * Interpretプログラムをさらに修正して、任意のクラスのコンストラクタをユーザが呼び出せるようにする。その際にどんな例外も表示すること。
+		 * またオブジェクトの生成が成功したら、そのオブジェクトのメソッドをユーザーが呼び出せるようにしなさい。
+		 */
 		// -------- 選択したコンストラクタからインスタンスを生成 (botton) ----------------------------------------
 		Button buttonCreateInstance = new Button("生成");
-		buttonCreateInstance.setBounds(defaultXPoint+ textParameterFiled.getWidth(), textParameterFiled .getY(), 80,30 );
+		buttonCreateInstance.setBounds(defaultXPoint+ textParameterFiled.getWidth(), textParameterFiled.getY(), 80, 20 );
 		add(buttonCreateInstance);
 		buttonCreateInstance.addActionListener(new ActionListener() {
 			@Override
@@ -154,7 +175,7 @@ public class InterpretFrame extends JFrame {
 						} else {
 							try {
 								object_ = Util.createObject(type_.getName());
-								showMessage("オブジェクトを生成しました." + object_.getClass().toString());
+								showMessage("オブジェクトを生成しました."  + "\n ->result: \"" + object_.getClass().toString()  + " \"");
 							} catch (ClassNotFoundException | IllegalAccessException | InstantiationException e1) {
 								e1.printStackTrace();
 								showErrorMessage(e1.toString());
@@ -174,8 +195,10 @@ public class InterpretFrame extends JFrame {
 						}
 						try {
 							object_ = Util.createObject(type_.getName(), paramTypes, paramValues);
-							showMessage("オブジェクトを生成しました." + object_.getClass().toString());
-						} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+							showMessage("オブジェクトを生成しました."  + "\n ->result: \"" + object_.getClass().toString()  + " \"");
+						} catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
+								InstantiationException | IllegalAccessException | IllegalArgumentException |
+								InvocationTargetException e1) {
 							e1.printStackTrace();
 							showErrorMessage(e1.toString());
 						}
@@ -185,31 +208,32 @@ public class InterpretFrame extends JFrame {
 			}
 		});
 
-		//-------- インスタンスのメソッド一覧を表示　( label +  List ) --------------------------------
+		//-------- インスタンスのメソッド一覧を表示 ( label +  List ) --------------------------------
 		Label labelMethod = new Label("■生成したオブジェクトのメソッド一覧");
 		labelMethod.setBounds(defaultXPoint, textParameterFiled.getY()+50, 300, 20);
 		add(labelMethod);
 		List listMethod = new List();
-		listMethod.setBounds(defaultXPoint, labelMethod.getY()+20, 300, 200);
+		listMethod.setBounds(defaultXPoint, labelMethod.getY()+20, 300, 80);
 		add(listMethod);
 
 		//-------- 型からメソッド一覧を取得 (botton) ----------------------------------------
 		Button buttonGetMethod = new Button("取得");
-		buttonGetMethod.setBounds(300+10, listMethod.getY(), 80,30 );
+		buttonGetMethod.setBounds(300+10, listMethod.getY(), 80,20 );
 		add(buttonGetMethod);
 		buttonGetMethod.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				listMethod.removeAll();
-				String name = classNameField.getText();
+				String name = textClassName.getText();
 				try {
 					type_ = Class.forName(name);
 					if ( type_ == null ) {
 						showErrorMessage("class not found hogehoge.");
 						return;
 					}
-					methodList_ = Util.getMethodList(type_.getName());
-					for (String method : methodList_) {
+					methodStringList_ = Util.getMethodList(type_.getName());
+					methodList_ = Util.getMethods(type_.getName());
+					for (String method : methodStringList_) {
 						listMethod.add(method);
 					}
 					showMessage("メソッドの一覧を取得しました.");
@@ -227,19 +251,141 @@ public class InterpretFrame extends JFrame {
 		add(labelMethodExecParam);
 
 		TextField textMethodParameterFiled = new TextField("(input parameter. ex: hoge,1)");
-		textMethodParameterFiled.setBounds(defaultXPoint, labelMethodExecParam.getY()+20, 500, 30);
+		textMethodParameterFiled.setBounds(defaultXPoint, labelMethodExecParam.getY()+20, 500, 20);
 		add(textMethodParameterFiled);
 
-		//-------- 型からメソッド一覧を取得 (botton) ----------------------------------------
-		Button buttonExecMethod = new Button("実行(実装中..)");
-		buttonExecMethod.setBounds(defaultXPoint + textMethodParameterFiled.getWidth(), textMethodParameterFiled.getY(), 150, 30 );
-		//efaultXPoint+ textParameterFiled.getX()+500, textParameterFiled .getY(), 80,30 );
+		//-------- メソッド実行 (botton) ----------------------------------------
+		Button buttonExecMethod = new Button("実行");
+		buttonExecMethod.setBounds(defaultXPoint + textMethodParameterFiled.getWidth(), textMethodParameterFiled.getY(), 80, 20 );
 		add(buttonExecMethod);
 		buttonExecMethod.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				int selectedIndex = listMethod.getSelectedIndex();// 選択されている項目のIndex取得
+				if (selectedIndex == -1) {
+					showErrorMessage(" 実行対象のメソッドを選択してください");
+				} else {
+					// メソッド引数の型
+					java.lang.reflect.Type[] paramTypes = methodList_[selectedIndex].getGenericParameterTypes();
+					String methodName = methodList_[selectedIndex].getName();
+					Object[] params = new Object[paramTypes.length];
+					String sorce = textMethodParameterFiled.getText();
+					String[] paramValues = convertParams(sorce);
+
+					if(paramValues!=null && paramValues.length != paramTypes.length) {
+						showErrorMessage("選択したコンストラクタの引数と一致しません");
+						return;
+					}
+					String[] paramsName = new String[paramTypes.length];
+					for (int i = 0; i < paramsName.length; i++) {
+						paramsName[i] = params[i].getClass().getName();
+					}
+					Object obj = null;
+					try {
+						obj = Util.executeMethod(object_, methodName, paramsName, paramValues);
+					} catch (ClassNotFoundException | IllegalAccessException | InstantiationException
+							| NoSuchMethodException | InvocationTargetException e1) {
+						showErrorMessage(e1.toString());
+						e1.printStackTrace();
+					}
+					if(obj != null) {
+						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj.toString()  + " \"");
+					}else {
+						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"");
+					}
+				}
+			}
+		});
+
+		// -------- 生成したオブジェクトのフィールド一覧  ----------------------------------------
+		Label labelField = new Label("■生成したオブジェクトのフィールド一覧");
+		labelField.setBounds(defaultXPoint, textMethodParameterFiled.getY()+textMethodParameterFiled.getHeight()+20, 250, 20);
+		add(labelField);
+		List listField = new List();
+		listField.setBounds(defaultXPoint, labelField.getY()+20, 300, 80);
+		add(listField);
+
+
+
+		//-------- フィールド取得 (botton) ----------------------------------------
+		Button buttonGetField = new Button("取得");
+		buttonGetField.setBounds(300+10, listField.getY(), 80,20 );
+		add(buttonGetField);
+		buttonGetField.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				listField.removeAll(); //表示するためlistFieldにつっこむ。
+				String className = textClassName.getText();
+				try {
+					type_ = Class.forName(className);
+					if ( type_ == null ) {
+						showErrorMessage("class not found hogehoge.");
+						return;
+					}
+
+					//フィールドのリストを取得.
+//					String[][] fieldList = null;
+//					try {
+//						fieldList = Util.getFieldList(object_, className);
+//					} catch (IllegalArgumentException | IllegalAccessException e1) {
+//						// TODO 自動生成された catch ブロック
+//						e1.printStackTrace();
+//					}
+//
+////					fieldStringList_ = Util.getFieldList(type_.getName());
+//					//TODO ↓
+////					fieldList_ = Util.
+////					methodList_ = Util.getMethods(type_.getName());
+////					for (String field : fieldStringList_) {
+////						listField.add(field);
+////					}
+//
+////					String[][] list = new String[fieldStringList_.length][3];
+////
+//					ArrayList<String> l = new ArrayList<String>();
+//					for (int i = 0; i < fieldStringList_.length; i++) {
+//						String kata = fieldList[i][0];
+//						String filedName = fieldList[i][1];
+//						String val = fieldList[i][2];
+//						l.add(kata + " " + filedName + " = " + val);
+//					}
+//					for (String field : l) {
+//						listField.add(field);
+//					}
+					//TODO 暫定。。。
+					Field[] fieldList = type_.getDeclaredFields();
+					if(fieldList == null || fieldList.length == 0){
+						return;
+					}
+					for (Field field : fieldList) {
+						listField.add(field.toString());
+					}
+					showMessage("フィールドの一覧を取得しました.");
+				} catch (ClassNotFoundException exception) {
+					exception.printStackTrace();
+					showErrorMessage("class not found.");
+				}
+			}
+		});
+
+		// -------- 選択したフィールドの更新パラメタ入力＆更新  ----------------------------------------
+		Label labelFieldUpdate = new Label("■フィールドの更新値");
+		labelFieldUpdate.setBounds(defaultXPoint, listField.getY()+listField.getHeight()+20, 230, 20);
+		add(labelFieldUpdate);
+
+		TextField textFieldValue = new TextField("(input field value. ex: 1234)");
+		textFieldValue.setBounds(defaultXPoint, labelFieldUpdate.getY()+20, 500, 20);
+		add(textFieldValue);
+
+		//-------- フィールド更新 (botton) ----------------------------------------
+		Button buttonUpdateField = new Button("更新");
+		buttonUpdateField.setBounds(defaultXPoint + textFieldValue.getWidth(), textFieldValue.getY(), 80,20 );
+		add(buttonUpdateField);
+		buttonUpdateField.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				//TODO 実装
-				showErrorMessage("実装中.....");
 			}
 		});
 	}
@@ -257,7 +403,6 @@ public class InterpretFrame extends JFrame {
 		if (sorce.equals("")) {
 			return ret;
 		}
-
 		//String(sorce) → String[]に変換
 		StringCounter strCounter = new StringCounter();
 		int paramElements = strCounter.countString(sorce, ",") + 1;
@@ -273,7 +418,6 @@ public class InterpretFrame extends JFrame {
 			startIndex = endIndex + 1;
 			endIndex = sorce.indexOf(',', startIndex);
 		}
-
 		return ret;
 	}
 
@@ -282,7 +426,7 @@ public class InterpretFrame extends JFrame {
 	}
 
 	private void showErrorMessage(final String message) {
-		textOutput_.setText("■■ERROR■■"+message);
+		textOutput_.setText("■ ■ ■ ■ ■ERROR■■ ■ ■ ■ ■\n"+message);
 	}
 
 }
