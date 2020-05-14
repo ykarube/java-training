@@ -302,14 +302,14 @@ public class InterpretFrame extends JFrame {
 		labelField.setBounds(defaultXPoint, textMethodParameterFiled.getY()+textMethodParameterFiled.getHeight()+20, 250, 20);
 		add(labelField);
 		List listField = new List();
-		listField.setBounds(defaultXPoint, labelField.getY()+20, 300, 80);
+		listField.setBounds(defaultXPoint, labelField.getY()+20, 500, 80);
 		add(listField);
 
 
 
 		//-------- フィールド取得 (botton) ----------------------------------------
 		Button buttonGetField = new Button("取得");
-		buttonGetField.setBounds(300+10, listField.getY(), 80,20 );
+		buttonGetField.setBounds(500+10, listField.getY(), 80,20 );
 		add(buttonGetField);
 		buttonGetField.addActionListener(new ActionListener() {
 			@Override
@@ -324,47 +324,21 @@ public class InterpretFrame extends JFrame {
 						return;
 					}
 
-					//フィールドのリストを取得.
-//					String[][] fieldList = null;
-//					try {
-//						fieldList = Util.getFieldList(object_, className);
-//					} catch (IllegalArgumentException | IllegalAccessException e1) {
-//						// TODO 自動生成された catch ブロック
-//						e1.printStackTrace();
-//					}
-//
-////					fieldStringList_ = Util.getFieldList(type_.getName());
-//					//TODO ↓
-////					fieldList_ = Util.
-////					methodList_ = Util.getMethods(type_.getName());
-////					for (String field : fieldStringList_) {
-////						listField.add(field);
-////					}
-//
-////					String[][] list = new String[fieldStringList_.length][3];
-////
-//					ArrayList<String> l = new ArrayList<String>();
-//					for (int i = 0; i < fieldStringList_.length; i++) {
-//						String kata = fieldList[i][0];
-//						String filedName = fieldList[i][1];
-//						String val = fieldList[i][2];
-//						l.add(kata + " " + filedName + " = " + val);
-//					}
-//					for (String field : l) {
-//						listField.add(field);
-//					}
-					//TODO 暫定。。。
-					Field[] fieldList = type_.getDeclaredFields();
-					if(fieldList == null || fieldList.length == 0){
-						return;
-					}
-					for (Field field : fieldList) {
-						listField.add(field.toString());
+					String[][] list = Util .getFieldList(object_,type_.getName() );
+					for (int j = 0; j < list.length; j++) {
+						listField.add(list[j][0]+ " "+ list[j][1] + " = " + list[j][2] );
+
 					}
 					showMessage("フィールドの一覧を取得しました.");
 				} catch (ClassNotFoundException exception) {
 					exception.printStackTrace();
 					showErrorMessage("class not found.");
+				} catch (IllegalArgumentException e1) {
+					// TODO 自動生成された catch ブロック
+					e1.printStackTrace();
+				} catch (IllegalAccessException e1) {
+					// TODO 自動生成された catch ブロック
+					e1.printStackTrace();
 				}
 			}
 		});
@@ -385,7 +359,41 @@ public class InterpretFrame extends JFrame {
 		buttonUpdateField.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//TODO 実装
+				int selectedIndex = listField.getSelectedIndex();// 選択されている項目のIndex取得
+				if (selectedIndex == -1) {
+					showErrorMessage(" 更新対象のフィールドを選択してください");
+				} else {
+
+
+//					java.lang.reflect.Type[] paramTypes = methodList_[selectedIndex].getGenericParameterTypes();
+//					String methodName = methodList_[selectedIndex].getName();
+//					Object[] params = new Object[paramTypes.length];
+//					String sorce = textMethodParameterFiled.getText();
+//					String[] paramValues = convertParams(sorce);
+//
+//					if(paramValues!=null && paramValues.length != paramTypes.length) {
+//						showErrorMessage("選択したコンストラクタの引数と一致しません");
+//						return;
+//					}
+//					String[] paramsName = new String[paramTypes.length];
+//					for (int i = 0; i < paramsName.length; i++) {
+//						paramsName[i] = params[i].getClass().getName();
+//					}
+//					Object obj = null;
+//					try {
+//						obj = Util.executeMethod(object_, methodName, paramsName, paramValues);
+//					} catch (ClassNotFoundException | IllegalAccessException | InstantiationException
+//							| NoSuchMethodException | InvocationTargetException e1) {
+//						showErrorMessage(e1.toString());
+//						e1.printStackTrace();
+//					}
+//					if(obj != null) {
+//						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj.toString()  + " \"");
+//					}else {
+//						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"");
+//					}
+				}
+
 			}
 		});
 	}

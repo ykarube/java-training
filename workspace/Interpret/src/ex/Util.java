@@ -1,14 +1,12 @@
 package ex;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Util {
@@ -180,170 +178,178 @@ public class Util {
 		return method.invoke(object, values);
 	}
 
-	//private fieldも表示する
-	public static String[] getFieldList(String className) throws ClassNotFoundException {
-		Class  clazz = Class.forName(className);
-		Field[] fieldList = clazz.getDeclaredFields();
-//		Field[] fieldList = clazz.getFields();
-		if(fieldList == null || fieldList.length == 0){
-			return null;
-		}
-		String[] list = new String[fieldList.length];
-		for(int i = 0; i < fieldList.length; i++){
-			Field f = fieldList[i];
-				list[i] = f.getName();			}
-		return list;
-	}
-
-
-	public static String[][] getFieldList(Object object , String className)throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException{
-		Class  clazz = Class.forName(className);
-		Field[] fieldList = clazz.getDeclaredFields();
-		if(fieldList == null || fieldList.length == 0){
-			return null;
-		}
-		String[][] list = new String[fieldList.length][3];
-		String[] typeList = new String[fieldList.length]; 	//型
-		String[] nameList = new String[fieldList.length];		//名称
-		String[] valueList = new String[fieldList.length];	//値
-		for(int i = 0; i < fieldList.length; i++){
-			Field f = fieldList[i];
-			System.out.println("■■■■■■■■■"+ f.getType());
-			System.out.println("■■■■■■■■■"+ f.getType().getComponentType());
-			System.out.println("■■■■■■■■■"+ f.getType().getComponentType().isArray());
-			f.setAccessible(true);
-			nameList[i] = f.getName();
-			Class fieldType = f.getType();
-			typeList[i] =  fieldType.getCanonicalName();
-			Object value = f.get(object);
-			if(value != null){
-				valueList[i] = value.toString();
-			}
-		}
-//		String[] sorted = Util.sort(nameList);
-//		int[] indexMap = Util.sortIndex(nameList);
-//		String[] sortedTypeList = Util.sortObject(typeList, indexMap);
-//		String[] sortedValueList = Util.sortObject(valueList, indexMap);
-//		for(int i = 0 ; i < sorted.length; i++){
-//			list[i][0] = sortedTypeList[i];
-//			list[i][1] = sorted[i];
-//			list[i][2] = sortedValueList[i];
-//		}
-		return list;
-	}
-
-	//copy
-//	public static String[][] getFieldList(Object object , String className)throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException{
-//		Class  clazz = Class.forName(className);
-//		Field[] fields = clazz.getDeclaredFields();
-//		if(fields == null || fields.length == 0){
+//	//private fieldも表示する
+//	public static String[] getFieldList(Object object_) throws ClassNotFoundException {
+//		Class  clazz = Class.forName(object_);
+//		Field[] fieldList = clazz.getDeclaredFields();
+////		Field[] fieldList = clazz.getFields();
+//		if(fieldList == null || fieldList.length == 0){
 //			return null;
 //		}
-//		String[][] list = new String[fields.length][3];
-//		String[] nameList = new String[fields.length];
-//		String[] typeList = new String[fields.length];
-//		String[] valueList = new String[fields.length];
-//		for(int i = 0; i < fields.length; i++){
-//			Field f = fields[i];
-//			f.setAccessible(true);
-//				nameList[i] = f.getName();
-//				Class fieldType = f.getType();
-//				typeList[i] =  fieldType.getCanonicalName();
-//				Object value = f.get(object);
-//				if(value != null){
-//					valueList[i] = value.toString();
-//				}
-//		}
-//		String[] sorted = Util.sort(nameList);
-//		int[] indexMap = Util.sortIndex(nameList);
-//		String[] sortedTypeList = Util.sortObject(typeList, indexMap);
-//		String[] sortedValueList = Util.sortObject(valueList, indexMap);
-//		for(int i = 0 ; i < sorted.length; i++){
-//			list[i][0] = sortedTypeList[i];
-//			list[i][1] = sorted[i];
-//			list[i][2] = sortedValueList[i];
-//		}
+//		String[] list = new String[fieldList.length];
+//		for(int i = 0; i < fieldList.length; i++){
+//			Field f = fieldList[i];
+//				list[i] = f.getName();			}
 //		return list;
 //	}
 
-	private static String[] sort(String[] list){
-		if(list == null || list.length == 0)return list;
-		String[] sorted  = new String[list.length];
-		List<String> array = new ArrayList<String>();
-		for(int i = 0; i < list.length; i++){
-			array.add(list[i]);
+
+//	public static String[][] getFieldList(Object object , String className)throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException{
+//		Class  clazz = Class.forName(className);
+//		Field[] fieldList = clazz.getDeclaredFields();
+//		if(fieldList == null || fieldList.length == 0){
+//			return null;
+//		}
+//		String[][] list = new String[fieldList.length][3];
+//		String[] typeList = new String[fieldList.length]; 	//型
+//		String[] nameList = new String[fieldList.length];		//名称
+//		String[] valueList = new String[fieldList.length];	//値
+//		for(int i = 0; i < fieldList.length; i++){
+//			Field f = fieldList[i];
+//			System.out.println("■■■■■■■■■"+ f.getType());
+//			System.out.println("■■■■■■■■■"+ f.getType().getComponentType());
+//			System.out.println("■■■■■■■■■"+ f.getType().getComponentType().isArray());
+//			f.setAccessible(true);
+//			nameList[i] = f.getName();
+//			Class fieldType = f.getType();
+//			typeList[i] =  fieldType.getCanonicalName();
+//			Object value = f.get(object);
+//			if(value != null){
+//				valueList[i] = value.toString();
+//			}
+//		}
+////		String[] sorted = Util.sort(nameList);
+////		int[] indexMap = Util.sortIndex(nameList);
+////		String[] sortedTypeList = Util.sortObject(typeList, indexMap);
+////		String[] sortedValueList = Util.sortObject(valueList, indexMap);
+////		for(int i = 0 ; i < sorted.length; i++){
+////			list[i][0] = sortedTypeList[i];
+////			list[i][1] = sorted[i];
+////			list[i][2] = sortedValueList[i];
+////		}
+//		return list;
+//	}
+
+	//copy
+	public static String[][] getFieldList(Object object, String className)throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException{
+
+		Class clazz;
+		String[][] list;
+
+		clazz = Class.forName(className);
+
+		Field[] fieldList = clazz.getDeclaredFields();
+		if(fieldList == null || fieldList.length == 0){
+			return null;
 		}
-		Collections.sort(array);
-		int i= 0;
-		for (String string : array) {
-			sorted[i] = string;
-			i++;
-		  //System.out.println(string);
-		}
-		return sorted;
-	}
-	/**
-	 * sort前のindex -> sort後のindexの配列
-	 * @param list
-	 * @return
-	 */
-	private static int[] sortIndex(String[] list){
-				if(list == null || list.length == 0)return null;
-				int[] sortIndex = new int[list.length];
-				String[] sorted  = new String[list.length];
-				List<String> array = new ArrayList<String>();
-				for(int i = 0; i < list.length; i++){
-					array.add(list[i]);
+		list = new String[fieldList.length][3]; //[i][0]=型,[i][0]=名前, [i][0]=値,
+
+		for(int i = 0; i < fieldList.length; i++){
+			System.out.println("-----------------------"+i+"-----------------------");
+			Field	field		 = fieldList[i];
+			Class	fieldType	 = null;     //fieldの型
+			String	fieldName	 = null;
+			Object	fieldValue	 = null;
+			String	fieldValueString = "";
+
+			System.out.println(">>>>"+ field);
+			System.out.println(">>>>"+ "isPrimitive = "+ field.getType().isPrimitive()  );
+			System.out.println(">>>>"+ "isArray = "+ field.getType().isArray()  );
+
+			int err = 0;
+			//Fieldが配列か否か
+			if(field.getType().isArray()) {
+				//配列の型(クラス)を取得する
+				fieldType = field.getType().getComponentType();
+				fieldName = field.getName();
+				field.setAccessible(true);
+				fieldValue = field.get(object);
+				int length = Array.getLength(fieldValue);
+				//primitive型のときは要素表示
+
+				for (int j = 0; j < length; j++) {
+					Class paramClass = primitiveClassMap.get(fieldType.getSimpleName());
+					if(char.class.equals(paramClass)) {
+						char c = Array.getChar(fieldValue, j);
+						fieldValueString += String.valueOf(c) + ",";
+					} else if(byte.class.equals(paramClass)) {
+						byte b = Array.getByte(fieldValue, j);
+						fieldValueString += String.valueOf(b) + ",";
+					} else if(int.class.equals(paramClass)) {
+						int num = Array.getInt(fieldValue, j);
+						fieldValueString += String.valueOf(num) + ",";
+					} else if(short.class.equals(paramClass)) {
+						short s = Array.getShort(fieldValue, j);
+						fieldValueString += String.valueOf(s) + ",";
+					} else if(long.class.equals(paramClass)) {
+						long l = Array.getShort(fieldValue, j);
+						fieldValueString += String.valueOf(l) + ",";
+					} else if(float.class.equals(paramClass)) {
+						float f = Array.getShort(fieldValue, j);
+						fieldValueString += String.valueOf(f) + ",";
+					} else if(double.class.equals(paramClass)) {
+						double d = Array.getShort(fieldValue, j);
+						fieldValueString += String.valueOf(d) + ",";
+					} else if(boolean.class.equals(paramClass)) {
+						boolean b = Array.getBoolean(fieldValue, j);
+						fieldValueString += String.valueOf(b) + ",";
+					} else {
+						fieldValueString += Array.get(fieldValue, j).toString();
+					}
 				}
-			Collections.sort(array);
-			int i= 0;
-			for (String string : array) {
-				sorted[i] = string;
-				i++;
-			  //System.out.println(string);
+			} else {
+				fieldType = field.getType();
+				fieldName = field.getName();
+				field.setAccessible(true);
+				fieldValue = field.get(object);
+				fieldValueString = fieldValue.toString();
 			}
-			for(i = 0; i < list.length; i++){
-				for(int j = 0 ; j < list.length; j ++){
-					if(sorted[i].equals(list[j]))sortIndex[j] = i;
-				}
-			}
-			return sortIndex;
-		}
-	/**
-	 * sort後のindex -> sort前のindexの配列
-	 * @param list
-	 * @return
-	 */
-	private static int[] deSortIndex(String[] list){
-				if(list == null || list.length == 0)return null;
-				int[] sortIndex = new int[list.length];
-				String[] sorted  = new String[list.length];
-				List<String> array = new ArrayList<String>();
-				for(int i = 0; i < list.length; i++){
-					array.add(list[i]);
-				}
-			Collections.sort(array);
-			int i= 0;
-			for (String string : array) {
-				sorted[i] = string;
-				i++;
-			  //System.out.println(string);
-			}
-			for(i = 0; i < list.length; i++){
-				for(int j = 0 ; j < list.length; j ++){
-					if(sorted[i].equals(list[j]))sortIndex[i] = j;
-				}
-			}
-			return sortIndex;
+
+			String simpleName = fieldType.getSimpleName();
+			String type =  field.getType().isArray() ? simpleName+"[]" : simpleName;
+			list[i][0]=  type;
+			list[i][1] = fieldName;
+			list[i][2] = fieldValueString;
+
+			System.out.println("■■type■■	= "+ list[i][0]);
+			System.out.println("■■name■■	= "+ list[i][1]);
+			System.out.println("■■value■■	= "+ list[i][2]);
 		}
 
-	private static String[] sortObject(String[] list,  int[] sortIndex){
-		if(list == null || list.length == 0)return null;
-		String[] result = new String[list.length];
-		for(int i = 0; i < list.length; i++){
-			result[sortIndex[i]] = list[i];
-		}
-		return result;
+		return list;
+	}
+
+
+	public static boolean updateField(Object object ,String className, String paramType, String paramName, String paramValue)throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, SecurityException, NoSuchFieldException{
+
+		if(paramValue == null || paramValue.equals("") || paramValue.length() == 0 || paramValue == null)return false;
+
+			Object  value;
+			Class objClass = Class.forName(className);
+			Class paramClass;
+			//mapにオブジェクトがあるか確認
+
+			if(primitiveMap.get(paramType) != null){
+				paramClass = primitiveClassMap.get(paramType);
+				// int -> Integer
+				Class wrapperClass = Class.forName( primitiveMap.get(paramType));
+				//Integer x = new Integer("10");
+				Object wrapperObj = wrapperClass.getConstructor(String.class).newInstance(paramValue);
+				//Integer.intValue();
+				Method m  = wrapperObj.getClass().getMethod(paramType + "Value", null );
+				m.setAccessible(true);
+				value =	m.invoke(wrapperObj, null);
+			}else{
+				paramClass = Class.forName(paramType);
+				Constructor constructor = paramClass.getConstructor(String.class);
+				constructor.setAccessible(true);
+				value = constructor.newInstance(paramValue);
+			}
+
+			Field f = object.getClass().getDeclaredField(paramName);
+			f.setAccessible(true);
+			f.set(object, value);
+			return true;
 	}
 
 }
