@@ -363,35 +363,38 @@ public class InterpretFrame extends JFrame {
 				if (selectedIndex == -1) {
 					showErrorMessage(" 更新対象のフィールドを選択してください");
 				} else {
+					try {
+						String[][] list = Util .getFieldList(object_,type_.getName() );
+						String className = type_.getName();
+						String paramType = list[selectedIndex][0];
+						String paramName = list[selectedIndex][1];
+						String paramValue = textFieldValue.getText();
+						Util.updateField(object_, className, paramType, paramName, paramValue);
 
+						showMessage("フィールドを更新しました.\n" + "before :" + list[selectedIndex][2] + "\n after  :" + paramValue);
+					} catch (ClassNotFoundException e1) {
+						// TODO 自動生成された catch ブロック
+						e1.printStackTrace();
+					} catch (IllegalAccessException e1) {
+						// TODO 自動生成された catch ブロック
+						e1.printStackTrace();
+					} catch (InstantiationException e1) {
+						// TODO 自動生成された catch ブロック
+						e1.printStackTrace();
+					} catch (NoSuchMethodException e1) {
+						// TODO 自動生成された catch ブロック
+						e1.printStackTrace();
+					} catch (InvocationTargetException e1) {
+						// TODO 自動生成された catch ブロック
+						e1.printStackTrace();
+					} catch (SecurityException e1) {
+						// TODO 自動生成された catch ブロック
+						e1.printStackTrace();
+					} catch (NoSuchFieldException e1) {
+						// TODO 自動生成された catch ブロック
+						e1.printStackTrace();
+					}
 
-//					java.lang.reflect.Type[] paramTypes = methodList_[selectedIndex].getGenericParameterTypes();
-//					String methodName = methodList_[selectedIndex].getName();
-//					Object[] params = new Object[paramTypes.length];
-//					String sorce = textMethodParameterFiled.getText();
-//					String[] paramValues = convertParams(sorce);
-//
-//					if(paramValues!=null && paramValues.length != paramTypes.length) {
-//						showErrorMessage("選択したコンストラクタの引数と一致しません");
-//						return;
-//					}
-//					String[] paramsName = new String[paramTypes.length];
-//					for (int i = 0; i < paramsName.length; i++) {
-//						paramsName[i] = params[i].getClass().getName();
-//					}
-//					Object obj = null;
-//					try {
-//						obj = Util.executeMethod(object_, methodName, paramsName, paramValues);
-//					} catch (ClassNotFoundException | IllegalAccessException | InstantiationException
-//							| NoSuchMethodException | InvocationTargetException e1) {
-//						showErrorMessage(e1.toString());
-//						e1.printStackTrace();
-//					}
-//					if(obj != null) {
-//						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj.toString()  + " \"");
-//					}else {
-//						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"");
-//					}
 				}
 
 			}
