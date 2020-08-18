@@ -22,10 +22,11 @@ import test.StringCounter;
 ######〇 staticメソッドの呼び出し   ★対応中 8/5～
 ######〇 waitの呼び出しで正しく表示されない >java.lang.IllegalMonitorStateException
 ######〇 setVisibleがうまく表示されなかた
+(want)   sort
 ######× setBackGroud  (setClororは未確認)
 ######× bottunAdd
 ######× 配列は確認していない
-######× 自分自身も確認していない  ←main(string[] args)実行するのでパラメータに配列をセットする実装必要。。
+######△ 自分自身も確認していない  ←main(string[] args)実行するためinvokeのパラメータに配列をセットする実装必要。。ただしexecute()を実行すればできるようにした△
 
 ######他の人
 ######・コンストラクタ/メソッドからの例外が表示されない。
@@ -298,13 +299,8 @@ public class InterpretFrame extends JFrame {
 					if(paramValues == null) {
 						paramValues = new String[0];
 					}
-//					String[] paramsName = new String[paramTypes.length];
-//					for (int i = 0; i < paramsName.length; i++) {
-//						paramsName[i] = paramTypes[i].getClass().getName();
-//					}
 					Object obj = null;
 					try {
-						//obj = Util.executeMethod(object_, methodName, paramsName, paramValues);
 						obj = Reflector.executeMethod(object_, methodName, paramTypes, paramValues);
 					} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException e1) {
 						String msg = "execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"";

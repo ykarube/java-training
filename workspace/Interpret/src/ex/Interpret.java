@@ -13,6 +13,10 @@ package ex;
 public class Interpret {
 
 	public static void main(String[] args) {
+		execute();
+	}
+
+	public static void execute() {
 		InterpretFrame frame = new InterpretFrame();
 		frame.setVisible(true);
 	}
