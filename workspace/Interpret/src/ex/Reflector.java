@@ -5,11 +5,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Util {
+public class Reflector {
 
 
 	static Map<String, String> primitiveMap = new HashMap<String, String>();
@@ -113,7 +114,10 @@ public class Util {
 		String[] list = new String[methodList.length];
 		for(int i = 0; i < methodList.length; i++){
 			Method m = methodList[i];
-				list[i] = m.getName() + "(";
+				list[i] = Modifier.toString(m.getModifiers()) + " "	//修飾子
+						+ m.getGenericReturnType().getTypeName()+ " "		//戻り値
+						+ m.getName() 									//メソッド名
+						+ "(";											//パラメータ
 				Class[] params = m.getParameterTypes();
 				if(params == null || params.length == 0){
 
@@ -137,6 +141,52 @@ public class Util {
 		return methodList;
 	}
 
+//	/**
+//	 *
+//	 * @param object 		メソッド実行対象のクラス
+//	 * @param methodName
+//	 * @param params
+//	 * @param paramValues
+//	 * @return
+//	 * @throws ClassNotFoundException
+//	 * @throws IllegalAccessException
+//	 * @throws InstantiationException
+//	 * @throws NoSuchMethodException
+//	 * @throws InvocationTargetException
+//	 */
+//	@SuppressWarnings("unchecked")
+//	public static Object oldExecuteMethod(Object object , String methodName, String[] params, String[] paramValues)throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException{
+//		Object obj = null;
+//		if(params == null ) {
+//			return null;
+//		}
+//		Class[] paramClasses = new Class[params.length];
+//		Object[] values  = new Object[params.length];
+//		for(int i = 0; i < params.length; i ++){
+//			//TODO if-else NULLcheck
+//			if(primitiveMap.get(params[i]) != null){
+//				paramClasses[i] = primitiveClassMap.get(params[i]);
+//				Class wrapperClass = Class.forName( primitiveMap.get(params[i]));
+//				Object wrapperObj = wrapperClass.getConstructor(String.class).newInstance(paramValues[i]);
+//				Method method  = wrapperObj.getClass().getMethod(params[i] + "Value", null );
+//				method.setAccessible(true);
+//				values[i]  = method.invoke(wrapperObj, null);;
+//			}else{
+//				paramClasses[i] = Class.forName(params[i]);
+//				Constructor constructor = paramClasses[i].getConstructor(String.class);
+//				constructor.setAccessible(true);
+//				values[i] = constructor.newInstance(paramValues[i]);
+//			}
+//		}
+//		Method method = object.getClass().getMethod(methodName, paramClasses);
+//		method.setAccessible(true);
+//		if(Modifier.isStatic(method.getModifiers()))
+//			obj = method.invoke(null, values);
+//		else
+//			obj = method.invoke(object, values);
+//		return obj;
+//	}
+
 	/**
 	 *
 	 * @param object 		メソッド実行対象のクラス
@@ -151,32 +201,46 @@ public class Util {
 	 * @throws InvocationTargetException
 	 */
 	@SuppressWarnings("unchecked")
-	public static Object executeMethod(Object object , String methodName, String[] params, String[] paramValues)throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException{
-		if(params == null ) {
+	public static Object executeMethod(Object object , String methodName, Type[] paramTypes, String[] paramValues)
+			throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException, Exception{
+		Object obj = null;
+		if(paramTypes == null ) {
 			return null;
 		}
-		Class[] paramClasses = new Class[params.length];
-		Object[] values  = new Object[params.length];
-		for(int i = 0; i < params.length; i ++){
+		Class[] paramClassList = new Class[paramTypes.length];
+		Object[] values = new Object[paramValues.length];
+		//Type→Class
+		for (int i = 0; i < paramClassList.length; i++) {
+			paramClassList[i] = paramTypes[i].getClass();
+			String param =paramTypes[i].getTypeName();
 			//TODO if-else NULLcheck
-			if(primitiveMap.get(params[i]) != null){
-				paramClasses[i] = primitiveClassMap.get(params[i]);
-				Class wrapperClass = Class.forName( primitiveMap.get(params[i]));
+			if(primitiveMap.get(param) != null){
+				paramClassList[i] = primitiveClassMap.get(param);
+				// int -> Integer
+				Class wrapperClass = Class.forName( primitiveMap.get(param));
+				//Integer x = new Integer("10");
 				Object wrapperObj = wrapperClass.getConstructor(String.class).newInstance(paramValues[i]);
-				Method method  = wrapperObj.getClass().getMethod(params[i] + "Value", null );
-				method.setAccessible(true);
-				values[i]  = method.invoke(wrapperObj, null);;
-				}else{
-				paramClasses[i] = Class.forName(params[i]);
-				Constructor constructor = paramClasses[i].getConstructor(String.class);
+				//Integer.intValue();
+				values[i] =wrapperObj.getClass().getMethod(param + "Value", null ).invoke(wrapperObj, null);
+			}else{
+				//TODO 排列に対応する
+				paramClassList[i] = Class.forName(paramTypes[i].getTypeName());
+				Constructor constructor = paramClassList[i].getConstructor(String.class);
 				constructor.setAccessible(true);
 				values[i] = constructor.newInstance(paramValues[i]);
 			}
 		}
-		Method method = object.getClass().getMethod(methodName, paramClasses);
+
+		Method method = object.getClass().getMethod(methodName, paramClassList);
 		method.setAccessible(true);
-		return method.invoke(object, values);
+		if(Modifier.isStatic(method.getModifiers()))
+			obj = method.invoke(null, values);
+		else
+			obj = method.invoke(object, values);
+		return obj;
 	}
+
+
 
 //	//private fieldも表示する
 //	public static String[] getFieldList(Object object_) throws ClassNotFoundException {
@@ -351,5 +415,10 @@ public class Util {
 			f.set(object, value);
 			return true;
 	}
+
+	static void dump(final String str ) {
+		System.out.println(">>>>> debug log >>>>>>>\t" + str);
+	}
+
 
 }

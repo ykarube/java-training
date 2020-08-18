@@ -19,6 +19,26 @@ import javax.swing.JFrame;
 import test.StringCounter;
 //TODO パラメータが排列のインスタンス生成
 /*
+######〇 staticメソッドの呼び出し   ★対応中 8/5～
+######〇 waitの呼び出しで正しく表示されない >java.lang.IllegalMonitorStateException
+######〇 setVisibleがうまく表示されなかた
+######× setBackGroud  (setClororは未確認)
+######× bottunAdd
+######× 配列は確認していない
+######× 自分自身も確認していない  ←main(string[] args)実行するのでパラメータに配列をセットする実装必要。。
+
+######他の人
+######・コンストラクタ/メソッドからの例外が表示されない。
+######・配列の要素としてFrameが作成できなかった
+######・Frameが作れなかった
+######・setBackgroundで色指定ができない
+######・自分自身が作れない"
+######・配列はまだ作れない（java.awt.Frameの配列など）
+######・メソッド（wait）の例外を表示しない
+######・ボタンもaddできない
+######・自分自身は呼べた（呼べなくなった）"
+ */
+/*
 2.4 『プログラミング言語Java 第4 版』| Interpret 課題
 練習問題16.6、16.7、16.8、16.10 をそれぞれ作成する代わりに、Interpret プログラムを１つ作成してもらいます。
 練習問題で指定された操作ができることに加えて、以下のことも行ってもらいます。
@@ -49,7 +69,7 @@ public class InterpretFrame extends JFrame {
 
 	private int defaultXPoint = 10;
 	private int windowWidth = 800;
-	private int windowHeight = 800;
+	private int windowHeight = 1000;
 	private Class<?> type_ ;					//ユーザが入力したクラス名
 	private Constructor<?>[] contructorList_;	//ユーザが入力したクラス名から取得したコンストラクタ
 	private Object object_;					//ユーザーが選択したコンストラクタから生成したインスタンスオブジェクト
@@ -79,23 +99,23 @@ public class InterpretFrame extends JFrame {
 		labelOutput.setBounds(defaultXPoint, windowHeight-180, 200, 20);
 		add(labelOutput);
 		this.textOutput_ = new TextArea("", 50, 50, TextArea.SCROLLBARS_BOTH);
-		this.textOutput_.setBounds(defaultXPoint, labelOutput.getY()+20, 800, 100);
+		this.textOutput_.setBounds(defaultXPoint, labelOutput.getY()+20, 500, 100);
 		add(this.textOutput_);
 
 		//-------- クラス名の入力( label +  textFiled ) ---------------------------------------
 		Label labelClassName = new Label("■取得対象クラス");
 		labelClassName.setBounds(defaultXPoint, 20, 300, 20);
 		add(labelClassName);
-		TextField textClassName = new TextField("(input class name. ex:java.lang.String)");
+		TextField textClassName = new TextField("java.lang.Integer");
 		textClassName.setBounds(defaultXPoint, labelClassName.getY()+20, 300, 20);
 		add(textClassName);
 
 		//-------- コンストラクタのリスト表示 ( label +  List ) --------------------------------
 		Label labelConstruct = new Label("■コンストラクタ一覧");
-		labelConstruct.setBounds(defaultXPoint, textClassName.getY()+40, 150, 20);
+		labelConstruct.setBounds(defaultXPoint, textClassName.getY()+40,300, 20);
 		add(labelConstruct);
 		List ListConstructor = new List();
-		ListConstructor.setBounds(defaultXPoint, labelConstruct.getY()+20, 300, 80);
+		ListConstructor.setBounds(defaultXPoint, labelConstruct.getY()+20, 500, 80);
 		add(ListConstructor);
 
 
@@ -128,11 +148,11 @@ public class InterpretFrame extends JFrame {
 					}
 					showMessage("コンストラクタの一覧を取得しました.");
 				} catch (ClassNotFoundException exception) {
-					exception.printStackTrace();
+					showErrorMessage(exception.toString());
 					showErrorMessage("class not found.");
 				} catch (Exception exception) {
 					exception.printStackTrace();
-					showErrorMessage(e.toString());
+					showErrorMessage(exception.getCause().toString());
 				}
 			}
 		});
@@ -174,14 +194,14 @@ public class InterpretFrame extends JFrame {
 							return;
 						} else {
 							try {
-								object_ = Util.createObject(type_.getName());
+								object_ = Reflector.createObject(type_.getName());
 								showMessage("オブジェクトを生成しました."  + "\n ->result: \"" + object_.getClass().toString()  + " \"");
 							} catch (ClassNotFoundException | IllegalAccessException | InstantiationException e1) {
 								e1.printStackTrace();
-								showErrorMessage(e1.toString());
+								showErrorMessage(e1.getCause().toString());
 							}  catch (Exception e1) {
 								e1.printStackTrace();
-								showErrorMessage(e1.toString());
+								showErrorMessage(e1.getCause().toString());
 							}
 						}
 
@@ -194,13 +214,12 @@ public class InterpretFrame extends JFrame {
 							return;
 						}
 						try {
-							object_ = Util.createObject(type_.getName(), paramTypes, paramValues);
+							object_ = Reflector.createObject(type_.getName(), paramTypes, paramValues);
 							showMessage("オブジェクトを生成しました."  + "\n ->result: \"" + object_.getClass().toString()  + " \"");
 						} catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
 								InstantiationException | IllegalAccessException | IllegalArgumentException |
 								InvocationTargetException e1) {
-							e1.printStackTrace();
-							showErrorMessage(e1.toString());
+							showErrorMessage(e1.getCause().toString());
 						}
 					}
 				}
@@ -213,12 +232,12 @@ public class InterpretFrame extends JFrame {
 		labelMethod.setBounds(defaultXPoint, textParameterFiled.getY()+50, 300, 20);
 		add(labelMethod);
 		List listMethod = new List();
-		listMethod.setBounds(defaultXPoint, labelMethod.getY()+20, 300, 80);
+		listMethod.setBounds(defaultXPoint, labelMethod.getY()+20, 500, 200);
 		add(listMethod);
 
 		//-------- 型からメソッド一覧を取得 (botton) ----------------------------------------
 		Button buttonGetMethod = new Button("取得");
-		buttonGetMethod.setBounds(300+10, listMethod.getY(), 80,20 );
+		buttonGetMethod.setBounds(500+10, listMethod.getY(), 80,20 );
 		add(buttonGetMethod);
 		buttonGetMethod.addActionListener(new ActionListener() {
 			@Override
@@ -231,8 +250,8 @@ public class InterpretFrame extends JFrame {
 						showErrorMessage("class not found hogehoge.");
 						return;
 					}
-					methodStringList_ = Util.getMethodList(type_.getName());
-					methodList_ = Util.getMethods(type_.getName());
+					methodStringList_ = Reflector.getMethodList(type_.getName());
+					methodList_ = Reflector.getMethods(type_.getName());
 					for (String method : methodStringList_) {
 						listMethod.add(method);
 					}
@@ -273,25 +292,34 @@ public class InterpretFrame extends JFrame {
 					String[] paramValues = convertParams(sorce);
 
 					if(paramValues!=null && paramValues.length != paramTypes.length) {
-						showErrorMessage("選択したコンストラクタの引数と一致しません");
+						showErrorMessage("選択したメソッドの引数と一致しません");
 						return;
 					}
-					String[] paramsName = new String[paramTypes.length];
-					for (int i = 0; i < paramsName.length; i++) {
-						paramsName[i] = params[i].getClass().getName();
+					if(paramValues == null) {
+						paramValues = new String[0];
 					}
+//					String[] paramsName = new String[paramTypes.length];
+//					for (int i = 0; i < paramsName.length; i++) {
+//						paramsName[i] = paramTypes[i].getClass().getName();
+//					}
 					Object obj = null;
 					try {
-						obj = Util.executeMethod(object_, methodName, paramsName, paramValues);
-					} catch (ClassNotFoundException | IllegalAccessException | InstantiationException
-							| NoSuchMethodException | InvocationTargetException e1) {
-						showErrorMessage(e1.toString());
-						e1.printStackTrace();
+						//obj = Util.executeMethod(object_, methodName, paramsName, paramValues);
+						obj = Reflector.executeMethod(object_, methodName, paramTypes, paramValues);
+					} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException e1) {
+						String msg = "execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"";
+						showErrorMessage( msg + "\n" + "Exception is \"" + e1.getCause().toString() + "\"");
+					} catch (InvocationTargetException e2) {
+						String msg = "execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"";
+						showErrorMessage( msg + "\n" + "Exception is \"" + e2.getTargetException().toString() + "\"");
+					} catch (Exception e3) {
+						String msg = "execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"";
+						showErrorMessage( msg + "\n" + "Exception is \"" + e3.getCause().toString() + "\"");
 					}
 					if(obj != null) {
 						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj.toString()  + " \"");
 					}else {
-						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"");
+
 					}
 				}
 			}
@@ -324,7 +352,7 @@ public class InterpretFrame extends JFrame {
 						return;
 					}
 
-					String[][] list = Util .getFieldList(object_,type_.getName() );
+					String[][] list = Reflector .getFieldList(object_,type_.getName() );
 					for (int j = 0; j < list.length; j++) {
 						listField.add(list[j][0]+ " "+ list[j][1] + " = " + list[j][2] );
 
@@ -336,9 +364,11 @@ public class InterpretFrame extends JFrame {
 				} catch (IllegalArgumentException e1) {
 					// TODO 自動生成された catch ブロック
 					e1.printStackTrace();
+					showErrorMessage("IllegalArgumentException.");
 				} catch (IllegalAccessException e1) {
 					// TODO 自動生成された catch ブロック
 					e1.printStackTrace();
+					showErrorMessage("IllegalAccessException.");
 				}
 			}
 		});
@@ -364,34 +394,35 @@ public class InterpretFrame extends JFrame {
 					showErrorMessage(" 更新対象のフィールドを選択してください");
 				} else {
 					try {
-						String[][] list = Util .getFieldList(object_,type_.getName() );
+						String[][] list = Reflector .getFieldList(object_,type_.getName() );
 						String className = type_.getName();
 						String paramType = list[selectedIndex][0];
 						String paramName = list[selectedIndex][1];
 						String paramValue = textFieldValue.getText();
-						Util.updateField(object_, className, paramType, paramName, paramValue);
+						Reflector.updateField(object_, className, paramType, paramName, paramValue);
 
 						showMessage("フィールドを更新しました.\n" + "before :" + list[selectedIndex][2] + "\n after  :" + paramValue);
 					} catch (ClassNotFoundException e1) {
-						// TODO 自動生成された catch ブロック
+						showErrorMessage(e1.getCause().toString());
 						e1.printStackTrace();
 					} catch (IllegalAccessException e1) {
 						// TODO 自動生成された catch ブロック
+						showErrorMessage(e1.getCause().toString()+ "フィールドにアクセスできません");
 						e1.printStackTrace();
 					} catch (InstantiationException e1) {
-						// TODO 自動生成された catch ブロック
+						showErrorMessage(e1.getCause().toString());
 						e1.printStackTrace();
 					} catch (NoSuchMethodException e1) {
-						// TODO 自動生成された catch ブロック
+						showErrorMessage(e1.getCause().toString());
 						e1.printStackTrace();
 					} catch (InvocationTargetException e1) {
-						// TODO 自動生成された catch ブロック
+						showErrorMessage(e1.getCause().toString());
 						e1.printStackTrace();
 					} catch (SecurityException e1) {
-						// TODO 自動生成された catch ブロック
+						showErrorMessage(e1.getCause().toString());
 						e1.printStackTrace();
 					} catch (NoSuchFieldException e1) {
-						// TODO 自動生成された catch ブロック
+						showErrorMessage(e1.getCause().toString());
 						e1.printStackTrace();
 					}
 
@@ -439,5 +470,6 @@ public class InterpretFrame extends JFrame {
 	private void showErrorMessage(final String message) {
 		textOutput_.setText("■ ■ ■ ■ ■ERROR■■ ■ ■ ■ ■\n"+message);
 	}
+
 
 }
