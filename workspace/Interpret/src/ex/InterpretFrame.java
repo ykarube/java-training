@@ -22,7 +22,7 @@ import test.StringCounter;
 ######〇 staticメソッドの呼び出し   ★対応中 8/5～
 ######〇 waitの呼び出しで正しく表示されない >java.lang.IllegalMonitorStateException
 ######〇 setVisibleがうまく表示されなかた
-(want)   sort
+(want)〇   sort
 ######× setBackGroud  (setClororは未確認)
 ######× bottunAdd
 ######× 配列は確認していない
@@ -240,30 +240,61 @@ public class InterpretFrame extends JFrame {
 		Button buttonGetMethod = new Button("取得");
 		buttonGetMethod.setBounds(500+10, listMethod.getY(), 80,20 );
 		add(buttonGetMethod);
-		buttonGetMethod.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				listMethod.removeAll();
-				String name = textClassName.getText();
-				try {
-					type_ = Class.forName(name);
-					if ( type_ == null ) {
-						showErrorMessage("class not found hogehoge.");
-						return;
-					}
-					methodStringList_ = Reflector.getMethodList(type_.getName());
-					methodList_ = Reflector.getMethods(type_.getName());
-					for (String method : methodStringList_) {
-						listMethod.add(method);
-					}
-					showMessage("メソッドの一覧を取得しました.");
-				} catch (ClassNotFoundException exception) {
-					exception.printStackTrace();
-					showErrorMessage("class not found.");
-				}
-			}
-		});
+//==========================ソートいじる前↓==========================
+//		buttonGetMethod.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				listMethod.removeAll();
+//				String name = textClassName.getText();
+//				try {
+//					type_ = Class.forName(name);
+//					if ( type_ == null ) {
+//						showErrorMessage("class not found.");
+//						return;
+//					}
+//					methodStringList_ = Reflector.getMethodList(type_.getName());
+//					methodList_ = Reflector.getMethods(type_.getName());
+//					for (String method : methodStringList_) {
+//						listMethod.add(method);
+//					}
+//					showMessage("メソッドの一覧を取得しました.");
+//				} catch (ClassNotFoundException exception) {
+//					exception.printStackTrace();
+//					showErrorMessage("class not found.");
+//				}
+//			}
+//		});
+//==========================ソートいじる前↑==========================
 
+		buttonGetMethod.addActionListener(new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			listMethod.removeAll();
+			String name = textClassName.getText();
+			try {
+				type_ = Class.forName(name);
+				if ( type_ == null ) {
+					showErrorMessage("class not found.");
+					return;
+				}
+				methodStringList_ = Reflector.getMethodList(type_.getName());
+				Method[] list = Reflector.getMethods(type_.getName());
+
+				//ソートする
+				int[] sortedMethodNumber = new int[methodStringList_.length];
+				methodList_ = new Method[methodStringList_.length];
+				sortedMethodNumber = Utility.deSortIndex(methodStringList_);	//methodStingList_をソートしたときの配列番号を取得
+				for (int j = 0; j < sortedMethodNumber.length; j++) {
+					listMethod.add(methodStringList_[sortedMethodNumber[j]]);	//UIへの一覧(listMethod)へはmethodStingList_[ソートしたときの配列番号]を指定しソートする
+					methodList_[j] = list[sortedMethodNumber[j]];
+				}
+				showMessage("メソッドの一覧を取得しました.");
+			} catch (ClassNotFoundException exception) {
+				exception.printStackTrace();
+				showErrorMessage("class not found.");
+			}
+		}
+	});
 
 		// -------- 選択したメソッドのパラメタ入力＆実行  ----------------------------------------
 		Label labelMethodExecParam = new Label("■メソッド実行パラメタ");
@@ -304,22 +335,39 @@ public class InterpretFrame extends JFrame {
 						obj = Reflector.executeMethod(object_, methodName, paramTypes, paramValues);
 					} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException e1) {
 						String msg = "execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"";
-						showErrorMessage( msg + "\n" + "Exception is \"" + e1.getCause().toString() + "\"");
+						Throwable cause = e1.getCause();
+						if(cause == null) {
+							showErrorMessage( msg + "\n" + "Exception is \"" + e1.toString() + "\"");
+						}else {
+							showErrorMessage( msg + "\n" + "Exception is \"" + e1.getCause().toString() + "\"");
+						}
+
 					} catch (InvocationTargetException e2) {
 						String msg = "execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"";
-						showErrorMessage( msg + "\n" + "Exception is \"" + e2.getTargetException().toString() + "\"");
+						Throwable cause = e2.getCause();
+						if(cause == null) {
+							showErrorMessage( msg + "\n" + "Exception is \"" + e2.toString() + "\"");
+						}else {
+							showErrorMessage( msg + "\n" + "Exception is \"" + e2.getCause().toString() + "\"");
+						}
 					} catch (Exception e3) {
 						String msg = "execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"";
-						showErrorMessage( msg + "\n" + "Exception is \"" + e3.getCause().toString() + "\"");
+						Throwable cause = e3.getCause();
+						if(cause == null) {
+							showErrorMessage( msg + "\n" + "Exception is \"" + e3.toString() + "\"");
+						}else {
+							showErrorMessage( msg + "\n" + "Exception is \"" + e3.getCause().toString() + "\"");
+						}
 					}
 					if(obj != null) {
 						showMessage("execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj.toString()  + " \"");
 					}else {
-
+						showMessage("execute method: \"" + methodName + " \"");
 					}
 				}
 			}
 		});
+
 
 		// -------- 生成したオブジェクトのフィールド一覧  ----------------------------------------
 		Label labelField = new Label("■生成したオブジェクトのフィールド一覧");

@@ -105,6 +105,16 @@ public class Reflector {
 		return ret;
 	}
 
+	/**
+	 * classNameが持つメソッドの一覧を取得する
+	 *
+	 * 出力形式： 修飾子_戻り値_メソッド名(パラメータ)
+	 * 出力例　： pubic int hashCode(int)
+	 *
+	 * @param className
+	 * @return
+	 * @throws ClassNotFoundException
+	 */
 	public static String[] getMethodList(String className)throws ClassNotFoundException{
 		Class  clazz = Class.forName(className);
 		Method[] methodList = clazz.getMethods();
@@ -115,7 +125,7 @@ public class Reflector {
 		for(int i = 0; i < methodList.length; i++){
 			Method m = methodList[i];
 				list[i] = Modifier.toString(m.getModifiers()) + " "	//修飾子
-						+ m.getGenericReturnType().getTypeName()+ " "		//戻り値
+						+ m.getGenericReturnType().getTypeName()+ " "	//戻り値
 						+ m.getName() 									//メソッド名
 						+ "(";											//パラメータ
 				Class[] params = m.getParameterTypes();
@@ -140,6 +150,8 @@ public class Reflector {
 		}
 		return methodList;
 	}
+
+
 
 //	/**
 //	 *
@@ -226,9 +238,11 @@ public class Reflector {
 			}else{
 				//TODO 排列に対応する
 				paramClassList[i] = Class.forName(paramTypes[i].getTypeName());
-				Constructor constructor = paramClassList[i].getConstructor(String.class);
-				constructor.setAccessible(true);
-				values[i] = constructor.newInstance(paramValues[i]);
+//				Constructor constructor = paramClassList[i].getConstructor(String.class);
+//				constructor.setAccessible(true);
+//				values[i] = constructor.newInstance(paramValues[i]);
+				values[i] = Class.forName(paramValues[i]);
+
 			}
 		}
 
