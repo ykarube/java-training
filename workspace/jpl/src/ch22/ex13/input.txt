@@ -1,0 +1,4 @@
+a=aabc
+b=bdcd
+c=hoge
+df=ddd

@@ -1,4 +1,4 @@
-package ch20.ex04;
+package ch21.ex01;
 
 import java.io.FilterReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * 1行全体が揃うまで待つメソッドを使用して、
- * 1度に1行の入力を返すFilterReaderのサブクラスを作成しなさ
+ * 1度に1行の入力を返すFilterReaderのサブクラスを作成しなさい
  */
 class LineFilterReader extends FilterReader {
 
@@ -46,20 +46,5 @@ class LineFilterReader extends FilterReader {
         }
         return list;
     }
-//    public static void main(String[] args) {
-//        StringReader sr = new StringReader("12345 \n"+ "abcde");
-//        LineFilterReader reader = new LineFilterReader(sr);
-//        try {
-//            reader.readLine();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } finally {
-//            try {
-//                reader.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
 }

@@ -14,10 +14,10 @@ public class DataHandler {
 
 	byte[] readFile(File file){
 		byte[] data;
-		if (file.equals(lastFile)){
-		data = lastData.get();
+		if (file.equals(lastFile.get())){
+			data = lastData.get();
 		if (data != null)
-		return data;
+			return data;
 		}
 		data = readBytesFromFile(file);
 		lastFile = new WeakReference<File>(file);

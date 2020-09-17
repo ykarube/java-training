@@ -95,6 +95,7 @@ public class Reflector {
 				Constructor constructor = paramClassList[i].getConstructor(String.class);
 				constructor.setAccessible(true);
 				values[i] = constructor.newInstance(paramValues[i]);
+//				values[i+1] = java.awt.Color.black;
 			}
 		}
 

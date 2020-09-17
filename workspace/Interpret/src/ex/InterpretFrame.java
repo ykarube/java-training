@@ -19,14 +19,14 @@ import javax.swing.JFrame;
 import test.StringCounter;
 //TODO パラメータが排列のインスタンス生成
 /*
-######〇 staticメソッドの呼び出し   ★対応中 8/5～
+######〇 staticメソッドの呼び出し
 ######〇 waitの呼び出しで正しく表示されない >java.lang.IllegalMonitorStateException
 ######〇 setVisibleがうまく表示されなかた
 (want)〇   sort
 ######× setBackGroud  (setClororは未確認)
 ######× bottunAdd
-######× 配列は確認していない
-######△ 自分自身も確認していない  ←main(string[] args)実行するためinvokeのパラメータに配列をセットする実装必要。。ただしexecute()を実行すればできるようにした△
+######対応中 配列は確認していない
+######〇 自分自身も確認していない  ←main(string[] args)実行するためinvokeのパラメータに配列をセットする実装必要。。ただしexecute()を実行すればできるようにした△
 
 ######他の人
 ######・コンストラクタ/メソッドからの例外が表示されない。
@@ -73,11 +73,12 @@ public class InterpretFrame extends JFrame {
 	private int windowHeight = 1000;
 	private Class<?> type_ ;					//ユーザが入力したクラス名
 	private Constructor<?>[] contructorList_;	//ユーザが入力したクラス名から取得したコンストラクタ
-	private Object object_;					//ユーザーが選択したコンストラクタから生成したインスタンスオブジェクト
+//	private Object object_;					//ユーザーが選択したコンストラクタから生成したインスタンスオブジェクト
 	private String[] methodStringList_;		//ユーザーが選択したクラスのメソッド一覧（文字列）
 	private Method[] methodList_;				//ユーザーが選択したクラスのメソッド一覧
 	private String[] fieldStringList_;			//ユーザーが選択したクラスのフィールド一覧（文字列）
 	private Field[]  fieldList_;				//ユーザーが選択したクラスのフィールド一覧
+	private Object[] objectList_;				//オブジェクトの配列
 
 	private TextArea textOutput_;				//結果出力 ※showMessage(String)を利用すること
 
@@ -104,16 +105,75 @@ public class InterpretFrame extends JFrame {
 		add(this.textOutput_);
 
 		//-------- クラス名の入力( label +  textFiled ) ---------------------------------------
-		Label labelClassName = new Label("■取得対象クラス");
+		Label labelClassName = new Label("■取得対象クラス / 配列サイズ");
 		labelClassName.setBounds(defaultXPoint, 20, 300, 20);
 		add(labelClassName);
 		TextField textClassName = new TextField("java.lang.Integer");
 		textClassName.setBounds(defaultXPoint, labelClassName.getY()+20, 300, 20);
 		add(textClassName);
 
+		TextField textArraySize = new TextField("1");
+		textArraySize.setBounds(defaultXPoint+textClassName.getWidth()+10, labelClassName.getY()+20, 20, 20);
+		add(textArraySize);
+
+		//-------- 配列のリスト表示( label +  textFiled ) ---------------------------------------
+		Label labelArrayName = new Label("■配列一覧");
+		labelArrayName.setBounds(defaultXPoint, textClassName.getY()+20, 300, 20);
+		add(labelArrayName);
+		List listArrayObj = new List();
+		listArrayObj.setBounds(defaultXPoint, labelArrayName.getY()+20, 500, 80);
+		add(listArrayObj);
+
+
+		Button buttonCreateArray = new Button("配列生成");
+		buttonCreateArray.setBounds(500+10, 40, 80, 20 );
+		add(buttonCreateArray);
+		buttonCreateArray.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				listArrayObj.removeAll();
+				type_ = null;
+				String name = textClassName.getText();
+				try {
+					type_ = Class.forName(name);						//指定された文字列名を持つクラスまたはインタフェースに関連付けられたClassオブジェクトを返します
+					if ( type_ == null ) {
+						showErrorMessage("class not found.");
+						return;
+					}
+					if ( textArraySize.getText() == null || textArraySize.getText() == "") {
+						showErrorMessage("配列サイズが未入力です");
+						return;
+					}
+					int size = 0;
+					try {
+						size = Integer.parseInt(textArraySize.getText());
+					} catch (NumberFormatException e2) {
+						showErrorMessage("配列サイズに数値以外が入力されている");
+						return;
+					}
+					objectList_ = new Object[size];
+					for (int i = 0; i < size ; i++) {
+						listArrayObj.add(type_.getSimpleName()+"["+ i + "] " );
+					}
+
+					showMessage("配列を生成しました");
+				} catch (ClassNotFoundException exception) {
+					showErrorMessage(exception.toString());
+					showErrorMessage("class not found.");
+				} catch (Exception exception) {
+					exception.printStackTrace();
+					showErrorMessage(exception.getCause().toString());
+				}
+			}
+
+		});
+
+
+
 		//-------- コンストラクタのリスト表示 ( label +  List ) --------------------------------
 		Label labelConstruct = new Label("■コンストラクタ一覧");
-		labelConstruct.setBounds(defaultXPoint, textClassName.getY()+40,300, 20);
+		labelConstruct.setBounds(defaultXPoint, listArrayObj.getY()+listArrayObj.getHeight()+2,300, 20);
 		add(labelConstruct);
 		List ListConstructor = new List();
 		ListConstructor.setBounds(defaultXPoint, labelConstruct.getY()+20, 500, 80);
@@ -129,7 +189,7 @@ public class InterpretFrame extends JFrame {
 		 *  Classオブジェクトから全てのConstructorを取得し、contructorList_へセットする*/
 		//-------- 型からコンストラクタ一覧を取得 (botton) ----------------------------------------
 		Button buttonGetConstructor = new Button("取得");
-		buttonGetConstructor.setBounds(300+10, 40, 80, 20 );
+		buttonGetConstructor.setBounds(500+10, labelConstruct.getY()+20, 80, 20 );
 		add(buttonGetConstructor);
 		buttonGetConstructor.addActionListener(new ActionListener() {
 			@Override
@@ -195,8 +255,9 @@ public class InterpretFrame extends JFrame {
 							return;
 						} else {
 							try {
-								object_ = Reflector.createObject(type_.getName());
-								showMessage("オブジェクトを生成しました."  + "\n ->result: \"" + object_.getClass().toString()  + " \"");
+								Object obj = Reflector.createObject(type_.getName());
+								objectList_[listArrayObj.getSelectedIndex()] = obj;
+								showMessage("オブジェクトを生成しました."  + "\n ->result: \"" + obj.getClass().toString()  + " \"");
 							} catch (ClassNotFoundException | IllegalAccessException | InstantiationException e1) {
 								e1.printStackTrace();
 								showErrorMessage(e1.getCause().toString());
@@ -215,8 +276,9 @@ public class InterpretFrame extends JFrame {
 							return;
 						}
 						try {
-							object_ = Reflector.createObject(type_.getName(), paramTypes, paramValues);
-							showMessage("オブジェクトを生成しました."  + "\n ->result: \"" + object_.getClass().toString()  + " \"");
+							Object obj = Reflector.createObject(type_.getName(), paramTypes, paramValues);
+							objectList_[listArrayObj.getSelectedIndex()] = obj;
+							showMessage("オブジェクトを生成しました."  + "\n ->result: \"" + obj.getClass().toString()  + " \"");
 						} catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
 								InstantiationException | IllegalAccessException | IllegalArgumentException |
 								InvocationTargetException e1) {
@@ -332,7 +394,7 @@ public class InterpretFrame extends JFrame {
 					}
 					Object obj = null;
 					try {
-						obj = Reflector.executeMethod(object_, methodName, paramTypes, paramValues);
+						obj = Reflector.executeMethod(objectList_[listArrayObj.getSelectedIndex()], methodName, paramTypes, paramValues);
 					} catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException e1) {
 						String msg = "execute method: \"" + methodName + " \"" + "\n ->result: \"" + obj  + " \"";
 						Throwable cause = e1.getCause();
@@ -396,7 +458,7 @@ public class InterpretFrame extends JFrame {
 						return;
 					}
 
-					String[][] list = Reflector .getFieldList(object_,type_.getName() );
+					String[][] list = Reflector .getFieldList(objectList_[listArrayObj.getSelectedIndex()],type_.getName() );
 					for (int j = 0; j < list.length; j++) {
 						listField.add(list[j][0]+ " "+ list[j][1] + " = " + list[j][2] );
 
@@ -438,12 +500,12 @@ public class InterpretFrame extends JFrame {
 					showErrorMessage(" 更新対象のフィールドを選択してください");
 				} else {
 					try {
-						String[][] list = Reflector .getFieldList(object_,type_.getName() );
+						String[][] list = Reflector .getFieldList(objectList_[listArrayObj.getSelectedIndex()],type_.getName() );
 						String className = type_.getName();
 						String paramType = list[selectedIndex][0];
 						String paramName = list[selectedIndex][1];
 						String paramValue = textFieldValue.getText();
-						Reflector.updateField(object_, className, paramType, paramName, paramValue);
+						Reflector.updateField(objectList_[listArrayObj.getSelectedIndex()], className, paramType, paramName, paramValue);
 
 						showMessage("フィールドを更新しました.\n" + "before :" + list[selectedIndex][2] + "\n after  :" + paramValue);
 					} catch (ClassNotFoundException e1) {
