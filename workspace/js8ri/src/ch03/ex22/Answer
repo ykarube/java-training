@@ -1,0 +1,6 @@
+Ans.
+存在する
+
+thenCompose(Function<? super T,? extends CompletionStage<U>> fn)
+このステージが正常に完了したときに、
+このステージを指定された関数への引数に設定して実行される新しいCompletionStageを返す
